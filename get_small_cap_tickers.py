@@ -1,3 +1,4 @@
+import numpy
 import pandas
 import requests
 from pandas import DataFrame
@@ -58,5 +59,6 @@ def get_small_cap_tickers(
 
 def _merge_ssr_data(df) -> DataFrame:
     ssr_df = get_ssr_list()
-
-    return pandas.merge(df, ssr_df, on="symbol")
+    ssr_df = pandas.merge(df, ssr_df, on="symbol", how="left")
+    ssr_df.fillna('', inplace=True)
+    return ssr_df
