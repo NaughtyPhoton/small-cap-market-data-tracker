@@ -1,4 +1,3 @@
-import time
 from datetime import date
 
 import pandas
@@ -6,13 +5,12 @@ from gspread import Spreadsheet, Worksheet
 from pandas import DataFrame
 
 from get_small_cap_tickers import get_small_cap_tickers
-from td_api import TdApi
 from register_apis import get_gspread_sheet
+from td_api import TdApi
 
 
 def update_all_small_cap_sheet(sh: Spreadsheet):
     all_small_cap_df: DataFrame = get_small_cap_tickers(min_volume=1)
-    all_small_cap_df = all_small_cap_df.drop(columns=['url'])
     all_small_cap_df['volume'] = pandas.to_numeric(all_small_cap_df['volume'])
 
     stocks_in_play_worksheet: Worksheet = sh.worksheet("All Small Cap Stocks")

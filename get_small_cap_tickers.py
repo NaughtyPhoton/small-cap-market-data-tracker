@@ -2,7 +2,7 @@ import pandas
 import requests
 from pandas import DataFrame
 
-from td_api import TdApi
+from get_ssr_list import get_ssr_list
 
 
 def get_all_tickers() -> dict:
@@ -37,22 +37,26 @@ def get_small_cap_tickers(
         max_market_cap: int = 150_000_000,
         min_volume: int = 5_000_000,
 ) -> DataFrame:
-
     all_tickers = get_all_tickers()
-
     df = pandas.DataFrame(all_tickers['data']['rows'])
-
     price_filter = (df['lastsale'].apply(lambda row:float(row[1:])) < max_price) & (
             df['lastsale'].apply(lambda row:float(row[1:])) > min_price)
-
     name_filter = (df['symbol'].str.len() < 5)
-
     market_cap_filter = (df['marketCap'].apply(lambda row:filter_market_cap(row, max_market_cap)))
-
     volume_filter = (df['volume'].apply(lambda row:filter_market_volume(row, min_volume)))
-
+    # Filter the DataFrame by above filters
     df = df[price_filter & name_filter & market_cap_filter & volume_filter]
-
+    # drop the url column
+    df = df.drop(columns=['url'])
+    # Append SSR data
+    df = _merge_ssr_data(df)
+    # Auto convert column datatypes
     df = df.convert_dtypes()
 
     return df
+
+
+def _merge_ssr_data(df) -> DataFrame:
+    ssr_df = get_ssr_list()
+
+    return pandas.merge(df, ssr_df, on="symbol")
